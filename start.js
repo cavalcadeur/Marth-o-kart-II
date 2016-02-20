@@ -192,13 +192,13 @@ function depart(){
 
 function centrer(x,y,temps){
     if (temps == 0){
-        scrollX = x * quadrillage - W/2;
-        scrollY = y * quadrillage - H/2;
+        scrollX = Math.floor(x * quadrillage - W/2);
+        scrollY = Math.floor(y * quadrillage - H/2);
         return;
     }
     moving = 1;
-    var objX = x * quadrillage - W/2 - scrollX;
-    var objY = y * quadrillage - H/2 - scrollY;
+    var objX = Math.floor(x * quadrillage - W/2 - scrollX);
+    var objY = Math.floor(y * quadrillage - H/2 - scrollY);
     var oldX = scrollX;
     var oldY = scrollY;
     var t3 = -50;
@@ -211,13 +211,11 @@ function centrer(x,y,temps){
         else {
             scrollX = objX + oldX;
             scrollY = objY + oldY;
-            t3 = -50;
             moving = 0;
             draw();
         }
     };
     window.requestAnimationFrame(g);
-
 }
 
 function movePerso(x,y){
@@ -387,13 +385,13 @@ function bouton(x,y){
         }
         x = x / quadrillage;
         y = y / quadrillage;
-        draw();
-        ctx.drawImage(imgExplosion,x * quadrillage - scrollX - quadrillage / 2,y * quadrillage - scrollY - quadrillage / 2,quadrillage * 2,quadrillage * 2);
         perso.forEach(
             function(e){
                 if (e.x == x && e.y == y) {e.vx = e.x; e.vy = e.y;}
             }
         );
+        draw();
+        ctx.drawImage(imgExplosion,x * quadrillage - scrollX - quadrillage / 2,y * quadrillage - scrollY - quadrillage / 2,quadrillage * 2,quadrillage * 2);
         pose = "";
     }
 
