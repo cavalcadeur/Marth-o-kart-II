@@ -1,0 +1,15 @@
+<html>
+  <head>
+    <title>Martheo Kart I</title>
+		<script src="start.js"></script>
+  </head>
+  <body onload="start()">
+    <h1>Martheo Kart</h1>
+		<canvas id="canvas" width="1000" height="800"></canvas>
+		<div id="R"></div>	
+
+    <address>
+      <a href="mailto:martin@memora.tolokoban.org">Anorma +</a>
+    </address>
+  </body>
+</html>
