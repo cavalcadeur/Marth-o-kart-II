@@ -51,12 +51,13 @@ var perso = [{"perso":"mort","x":23,y:14,"vx":24,"vy":14,"r":0,"objet":""},
              {"perso":"mort","x":23,y:13,"vx":24,"vy":13,"r":0,"objet":""}];
 
 function chargement(){
-//    for(var i = 0;i < 100;i ++){
-//        course[2].carreaux[i] = [];
-//        for(var j = 0;j < 100;j ++){
-//            course[2].carreaux[i][j] = 0;
-//        }
-//    }
+//    course[1].carreaux = [];
+//    for(var i = 0;i < 60;i ++){
+//        course[1].carreaux[i] = [];
+  //      for(var j = 0;j < 60;j ++){
+    //        course[1].carreaux[i][j] = 0;
+      //  }
+    //}
     var load = objets.length + course.length;
     course.forEach(
         function(e) {
@@ -149,8 +150,8 @@ function depart(){
             evt.preventDefault();
             //evt = evt.changedTouches[0];
             var rect = canvas.getBoundingClientRect();
-            var x = evt.pageX - rect.left;
-            var y = evt.pageY - rect.top;
+            var x = evt.clientX;
+            var y = evt.clientY;
             if (evt.buttons == 1)
                 if (onCourse == 0) select(x,y);
                 else bouton(x,y);
@@ -405,8 +406,8 @@ function bouton(x,y){
         x = x / quadrillage;
         y = y / quadrillage;
         course[nCourse][pose].push([x,y]);
-        draw();
         pose = "";
+        draw();
     }
 }
 
