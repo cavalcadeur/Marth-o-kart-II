@@ -153,6 +153,7 @@ function depart(){
             var x = evt.clientX;
             var y = evt.clientY;
             console.log(x);
+            console.log(y);
             if (evt.buttons == 1)
                 console.log("vgbfdsb");
                 if (onCourse == 0) select(x,y);
