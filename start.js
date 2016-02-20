@@ -152,7 +152,9 @@ function depart(){
             var rect = canvas.getBoundingClientRect();
             var x = evt.clientX;
             var y = evt.clientY;
+            console.log(x);
             if (evt.buttons == 1)
+                console.log("vgbfdsb");
                 if (onCourse == 0) select(x,y);
                 else bouton(x,y);
         });
