@@ -51,13 +51,15 @@ var perso = [{"perso":"mort","x":23,y:14,"vx":24,"vy":14,"r":0,"objet":""},
              {"perso":"mort","x":23,y:13,"vx":24,"vy":13,"r":0,"objet":""}];
 
 function chargement(){
-//    course[3].carreaux = [];
-//    for(var i = 0;i < 60;i ++){
-//        course[3].carreaux[i] = [];
-//        for(var j = 0;j < 60;j ++){
-//            course[3].carreaux[i][j] = 0;
-//        }
-//    }
+    /*
+    course[6].carreaux = [];
+    for(var i = 0;i < 60;i ++){
+        course[6].carreaux[i] = [];
+        for(var j = 0;j < 60;j ++){
+            course[6].carreaux[i][j] = 0;
+        }
+    }
+     */
     var load = objets.length + course.length;
     course.forEach(
         function(e) {
@@ -120,6 +122,7 @@ function start(){
     W = canvas.width;
     H = canvas.height;
     resize();
+    Crossed.init(W,H);
     course = defineVar();
     chargement();
 }
@@ -133,10 +136,12 @@ function menu(){
     var tailleY = (H - 20) / 5;
     course.forEach(
         function(e,index){
-            ctx.fillStyle = "rgb(65,65,65)";
-            ctx.fillRect(10 + Math.floor(index / 5) * tailleX,10 + index * tailleY,tailleX - 20,tailleY - 20);
-            ctx.fillStyle = "rgb(255,255,255)";
-            ctx.fillText(e.nom,10 + tailleX / 2 - 10,10 + index * tailleY + tailleY / 2 - 10);
+            if (index<5){
+                ctx.fillStyle = "rgb(65,65,65)";
+                ctx.fillRect(10 + Math.floor(index / 5) * tailleX,10 + index * tailleY,tailleX - 20,tailleY - 20);
+                ctx.fillStyle = "rgb(255,255,255)";
+                ctx.fillText(e.nom,10 + tailleX / 2 - 10,10 + index * tailleY + tailleY / 2 - 10);
+            }
         }
     );
     ctx.globalAlpha = 1.0;
@@ -172,10 +177,11 @@ function depart(){
     document.addEventListener(
         "keydown",
         function (event){
-            if (onCourse == 0) return;
             event.preventDefault();
             event.stopPropagation();
-            scrollMaFace(event.keyCode);
+            Crossed.keysPress(event.keyCode,ctx,W,H);
+            if (onCourse == 0) return;
+            scrollMaFace(event.keyCode);            
         }
     );
     document.addEventListener(
@@ -248,8 +254,7 @@ function movePerso(x,y){
                 perso[tour].vx = x;
                 perso[tour].vy = y;
                 return;
-            }
-            
+            }            
         });
     var f = function(t) {
         if (t2 == -50) t2 = t;
@@ -261,6 +266,10 @@ function movePerso(x,y){
             if (course[nCourse].carreaux[x][y] == 1){
                 perso[tour].x = x;
                 perso[tour].y = y;
+            }
+            else if (course[nCourse].carreaux[x][y] == 3){
+                onCourse = 0;
+                Crossed.improve();
             }
             else {
                 perso[tour].x = x - dx;
@@ -276,7 +285,14 @@ function movePerso(x,y){
             t2 = -50;
             tour += 1;
             if (tour == perso.length) tour = 0;
-            centrer(perso[tour].x,perso[tour].y,600);
+            if (onCourse == 0) {
+                tour = 0;
+                moving = 0;
+                perso = [{"perso":"mort","x":23,y:14,"vx":24,"vy":14,"r":0,"objet":""},
+                         {"perso":"mort","x":23,y:13,"vx":24,"vy":13,"r":0,"objet":""}];
+                menu();
+            }
+            else centrer(perso[tour].x,perso[tour].y,600);
         }
     };
     window.requestAnimationFrame(f);
@@ -318,18 +334,20 @@ function select(x,y){
     var tailleY = (H - 20) / 5;
     course.forEach(
         function(e,index){
-            if (x > 10 + Math.floor(index / 5) * tailleX && y > 10 + index * tailleY && x < Math.floor(index / 5) * tailleX + tailleX - 10 && y < index * tailleY + tailleY - 10){
-                nCourse = index;
-                onCourse = 1;
-                perso[0].x = e.persos[0][0];
-                perso[0].y = e.persos[0][1];
-                perso[0].vx = e.persos[0][2];
-                perso[0].vy = e.persos[0][3];
-                perso[1].x = e.persos[1][0];
-                perso[1].y = e.persos[1][1];
-                perso[1].vx = e.persos[1][2];
-                perso[1].vy = e.persos[1][3];
-                return;
+            if (index<5){
+                if (x > 10 + Math.floor(index / 5) * tailleX && y > 10 + index * tailleY && x < Math.floor(index / 5) * tailleX + tailleX - 10 && y < index * tailleY + tailleY - 10){
+                    nCourse = index;
+                    onCourse = 1;
+                    perso[0].x = e.persos[0][0];
+                    perso[0].y = e.persos[0][1];
+                    perso[0].vx = e.persos[0][2];
+                    perso[0].vy = e.persos[0][3];
+                    perso[1].x = e.persos[1][0];
+                    perso[1].y = e.persos[1][1];
+                    perso[1].vx = e.persos[1][2];
+                    perso[1].vy = e.persos[1][3];
+                    return;
+                }
             }
         }
     );
@@ -351,7 +369,7 @@ function bouton(x,y){
         }
         x = x / quadrillage;
         y = y / quadrillage;
-        if (edition == 1) {course[nCourse].carreaux[x][y] = (course[nCourse].carreaux[x][y] + 1) % 3;draw();console.log(course[nCourse].carreaux);}
+        if (edition == 1) {course[nCourse].carreaux[x][y] = (course[nCourse].carreaux[x][y] + 1) % 4;draw();console.log(course[nCourse].carreaux);}
         else if ((x == perso[tour].vx + 1 | x == perso[tour].vx - 1 | x == perso[tour].vx) && (y == perso[tour].vy + 1 | y == perso[tour].vy - 1 | y == perso[tour].vy)){
             movePerso(x,y);
         }
@@ -427,8 +445,12 @@ function draw(){
                     ctx.fillStyle = "rgb(0,200,0)";
                     ctx.fillRect(i * quadrillage - scrollX,j * quadrillage - scrollY,quadrillage,quadrillage);
                 }
-                if (course[nCourse].carreaux[i][j] == 2){
+                else if (course[nCourse].carreaux[i][j] == 2){
                     ctx.fillStyle = "rgb(200,0,0)";
+                    ctx.fillRect(i * quadrillage - scrollX,j * quadrillage - scrollY,quadrillage,quadrillage);
+                }
+                else if (course[nCourse].carreaux[i][j] == 3){
+                    ctx.fillStyle = "rgb(200,200,0)";
                     ctx.fillRect(i * quadrillage - scrollX,j * quadrillage - scrollY,quadrillage,quadrillage);
                 }
             }
@@ -440,7 +462,7 @@ function draw(){
         ctx.drawImage(imgCroix,perso[tour].vx * quadrillage  - scrollX,perso[tour].vy * quadrillage - scrollY,quadrillage,quadrillage);
         points.forEach(
             function(e,index){
-                if (course[nCourse].carreaux[perso[tour].vx + e[0]][perso[tour].vy + e[1]] == 1){
+                if (course[nCourse].carreaux[perso[tour].vx + e[0]][perso[tour].vy + e[1]] == 1 | course[nCourse].carreaux[perso[tour].vx + e[0]][perso[tour].vy + e[1]] == 3){
                     ctx.drawImage(imgCroixB,(perso[tour].vx + e[0]) * quadrillage  - scrollX,(perso[tour].vy + e[1]) * quadrillage - scrollY,quadrillage,quadrillage);
                 }
                 else {
