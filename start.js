@@ -37,6 +37,8 @@ var imgCroixB = new Image();
 imgCroixB.src = "images/symetrieB.png";
 var imgBoite = new Image();
 imgBoite.src = "images/cadeau.png";
+var imgFumee = new Image();
+imgFumee.src = "images/fumee.png";
 var tour = 0;
 var moving = 0;
 var t2 = -50;
@@ -47,19 +49,19 @@ var nCourse = 0;
 var pose = "";
 var onCourse = 0;
 
-var perso = [{"perso":"mort","x":23,y:14,"vx":24,"vy":14,"r":0,"objet":""},
-             {"perso":"mort","x":23,y:13,"vx":24,"vy":13,"r":0,"objet":""}];
+var perso = [{"perso":"mort","x":23,y:14,"vx":24,"vy":14,"r":0,"s":0,"objet":""},
+             {"perso":"mort","x":23,y:13,"vx":24,"vy":13,"r":0,"s":0,"objet":""}];
 
 function chargement(){
     /*
-    course[6].carreaux = [];
-    for(var i = 0;i < 60;i ++){
-        course[6].carreaux[i] = [];
-        for(var j = 0;j < 60;j ++){
-            course[6].carreaux[i][j] = 0;
+    course[4].carreaux = [];
+    for(var i = 0;i < 50;i ++){
+        course[4].carreaux[i] = [];
+        for(var j = 0;j < 50;j ++){
+            course[4].carreaux[i][j] = 0;
         }
     }
-     */
+    */
     var load = objets.length + course.length;
     course.forEach(
         function(e) {
@@ -87,7 +89,7 @@ function rnd(max){
 }
 
 function scrollMaFace(touche){
-    if (moving == 1) return;
+    if (moving >= 1) return;
     keys[touche] = 1;
     if (keys[39] == 1) scrollX += quadrillage;
     if (keys[37] == 1) scrollX -= quadrillage;
@@ -197,6 +199,7 @@ function depart(){
 }
 
 function centrer(x,y,temps){
+    if (moving == 2) return ;
     if (temps == 0){
         scrollX = Math.floor(x * quadrillage - W/2);
         scrollY = Math.floor(y * quadrillage - H/2);
@@ -268,8 +271,7 @@ function movePerso(x,y){
                 perso[tour].y = y;
             }
             else if (course[nCourse].carreaux[x][y] == 3){
-                onCourse = 0;
-                Crossed.improve();
+                finCourse(tour);
             }
             else {
                 perso[tour].x = x - dx;
@@ -282,17 +284,19 @@ function movePerso(x,y){
                     perso[tour].objet = objets[rnd(objets.length)];
                 }
             });
-            t2 = -50;
-            tour += 1;
-            if (tour == perso.length) tour = 0;
-            if (onCourse == 0) {
-                tour = 0;
-                moving = 0;
-                perso = [{"perso":"mort","x":23,y:14,"vx":24,"vy":14,"r":0,"objet":""},
-                         {"perso":"mort","x":23,y:13,"vx":24,"vy":13,"r":0,"objet":""}];
-                menu();
+            if (moving != 2){
+                t2 = -50;
+                tour += 1;
+                if (tour == perso.length) tour = 0;
+                if (onCourse == 0) {
+                    tour = 0;
+                    moving = 0;
+                    perso = [{"perso":"mort","x":23,y:14,"vx":24,"vy":14,"r":0,"objet":""},
+                             {"perso":"mort","x":23,y:13,"vx":24,"vy":13,"r":0,"objet":""}];
+                    menu();
+                }
+                else centrer(perso[tour].x,perso[tour].y,600);
             }
-            else centrer(perso[tour].x,perso[tour].y,600);
         }
     };
     window.requestAnimationFrame(f);
@@ -434,8 +438,8 @@ function draw(){
     drawCourse();
     perso.forEach(
         function(e,index) {
-            ctx.drawImage(imgPerso[e.r],e.x * quadrillage - scrollX,e.y * quadrillage - scrollY,quadrillage,quadrillage);
-            ctx.drawImage(imgGus[index],e.x * quadrillage - scrollX,e.y * quadrillage - scrollY,quadrillage,quadrillage);
+            ctx.drawImage(imgPerso[e.r],e.x * quadrillage - scrollX - e.s,e.y * quadrillage - scrollY - e.s,quadrillage+e.s*2,quadrillage+e.s*2);
+            ctx.drawImage(imgGus[index],e.x * quadrillage - scrollX - e.s,e.y * quadrillage - scrollY - e.s,quadrillage+e.s*2,quadrillage+e.s*2);
         }
     );
     if (edition == 1){
@@ -530,4 +534,116 @@ function boost(nPerso,vit){
     else if (perso[nPerso].vx < perso[nPerso].x) perso[nPerso].vx -= vit;
     if (perso[nPerso].vy > perso[nPerso].y) perso[nPerso].vy += vit;
     else if (perso[nPerso].vy < perso[nPerso].y) perso[nPerso].vy -= vit;
+}
+
+function finCourse(gagnant){
+    moving = 2;
+    t2 = -50;
+    console.log(scrollX);
+    var rotate = 5;
+    var x = (scrollX + W / 2)/quadrillage;
+    var y = (scrollY + H / 2)/quadrillage;
+    var dx = x - perso[gagnant].x;
+    var dy = y - perso[gagnant].y;
+    var fumee = [];
+    var i = 0;
+    var f = function(t) {
+        if (t2 == -50) t2 = t;
+        draw();
+        if (t - t2 < speed*13){
+            fumee.forEach(
+                function (e){
+                    if (e[3] > 0){
+                        ctx.save();
+                        ctx.translate(e[0],e[1]);
+                        ctx.rotate(e[2]);
+                        ctx.globalAlpha = e[3];
+                        ctx.drawImage(imgFumee,-20,-20);
+                        ctx.restore();
+                        var ddd = rnd(10)/10;
+                        if (i < 104){
+                            e[0] += ddd - 0.5;
+                            e[1] += ddd;
+                            var di = 10;
+                        }
+                        else {
+                            e[0] += e[4];
+                            e[1] += e[5];
+                            e[5] += 0.5;
+                            var di = 20;
+                        }
+                        e[2] += ddd;
+                        e[3] -= ddd/di;
+                    }
+                }
+            );
+            ctx.globalAlpha = 1;
+            rotate -= 1;
+            if (rotate == 0){
+                rotate = 5;
+                perso[gagnant].r = (perso[gagnant].r + 1) % 4;
+            }
+            if (t - t2 < speed*3){
+                perso[gagnant].x = (t - t2) / speed * dx + x - dx;
+                perso[gagnant].y = (t - t2) / speed * dy + y - dy;
+                perso[gagnant].s = (t - t2) / speed * 10;
+            }
+            else if (i < 101){
+                //if (6*speed%0.06*speed == 0){
+                i += 1;
+                var ax = (W/300)*i;
+                var ay = H - ((H/8)*7)/100*i;
+                var bx = W - (W/300)*i;
+                var by = H - ((H/8)*7)/100*i;
+                fumee.push([ax,ay,0,1]);
+                fumee.push([bx,by,0,1]);
+            }
+            else if (i < 105){
+                i += 1;
+            }
+            else if (i == 105){
+                i ++;
+                for (var j = 0;j < 50;j++){
+                    var randX = -10 + rnd(20);
+                    var randY = -10 + rnd(20);
+                    fumee[j] = [W/3 + randX,H/8 + randY,0,1,randX,randY];
+                }
+                for (var j = 50;j < 100;j++){
+                    var randX = -10 + rnd(20);
+                    var randY = -10 + rnd(20);
+                    fumee[j] = [W - (W/3 + randX),H/8 + randY,0,1,randX,randY];
+                }
+            }
+            else if (i == 119){
+                i ++;
+                for (var j = 100;j < 150;j++){
+                    var randX = -10 + rnd(20);
+                    var randY = -10 + rnd(20);
+                    fumee[j] = [W/3 + randX,H/8 + randY,0,1,randX,randY];
+                }
+                for (var j = 150;j < 200;j++){
+                    var randX = -10 + rnd(20);
+                    var randY = -10 + rnd(20);
+                    fumee[j] = [W - (W/3 + randX),H/8 + randY,0,1,randX,randY];
+                }
+            }
+            else{
+                i ++;
+            }
+            window.requestAnimationFrame(f);
+        }
+        else {
+            t2 = -50;
+            moving = 0;
+            onCourse = 0;
+            Crossed.improve();
+            tour = 0;
+            perso = [{"perso":"mort","x":23,y:14,"vx":24,"vy":14,"r":0,"s":0,"objet":""},
+                     {"perso":"mort","x":23,y:13,"vx":24,"vy":13,"r":0,"s":0,"objet":""}];
+            menu();
+        }
+    };
+    window.requestAnimationFrame(f);
+
+
 }
